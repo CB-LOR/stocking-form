@@ -1,5 +1,5 @@
 {
-  "body": "{\"message\": \"hello world\"}",
+  "body": "{\"firstName\": \"Bruce\", \"lastName\": \"Wayne\", \"phone\": \"1234567890\", \"email\": \"batman@gmail.com\", \"stockingCount\": 2, \"pickup\": \"house\", \"message\": \"hello world\"}",
   "resource": "/stocking/signup",
   "path": "/stocking/signup",
   "httpMethod": "POST",

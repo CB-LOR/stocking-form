@@ -1,42 +1,45 @@
 import json
+import boto3
+import traceback
 
-# import requests
+ddb = boto3.resource('dynamodb')
+table = ddb.Table('stocking-orders')
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    # parse order from event
+    order = parse_order(event)
+    if order is None:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad attribute"}),
+        }
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
+    # Add entry to table
+    table.put_item(
+        Item = order
+    )
 
     return {
         "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
+        "body": json.dumps({"message": "success"}),
     }
+
+
+def parse_order(event):
+    # check incoming values and create order
+    try:
+        body = json.loads(event['body'])
+        return {
+            'firstName': body['firstName'],
+            'lastName': body['lastName'],
+            'phone': body['phone'],
+            'email': body['email'],
+            'stockingCount': body['stockingCount'],
+            'pickup': body['pickup'],
+            'message': body.get('message', '')
+        }
+    except Exception as e:
+        print('Failed to get all required attributes', e)
+        print(traceback.format_exc())
+        return None

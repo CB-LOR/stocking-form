@@ -1,8 +1,8 @@
+from datetime import datetime
 import json
-
 import pytest
 
-from hello_world import app
+from src.app import parse_order, add_order_timestamp
 
 
 @pytest.fixture()
@@ -10,7 +10,7 @@ def apigw_event():
     """ Generates API GW Event"""
 
     return {
-        "body": '{ "test": "body"}',
+        "body": '{"firstName": "Bruce", "lastName": "Wayne", "phone": "1234567890", "email": "batman@gmail.com", "stockingCount": 2, "pickup": "house", "message": "hello world"}',
         "resource": "/{proxy+}",
         "requestContext": {
             "resourceId": "123456",
@@ -62,12 +62,25 @@ def apigw_event():
     }
 
 
-def test_lambda_handler(apigw_event, mocker):
+def test_parse_order(apigw_event):
 
-    ret = app.lambda_handler(apigw_event, "")
-    data = json.loads(ret["body"])
+    order = parse_order(apigw_event)
 
-    assert ret["statusCode"] == 200
-    assert "message" in ret["body"]
-    assert data["message"] == "hello world"
-    # assert "location" in data.dict_keys()
+    assert order["firstName"] == 'Bruce'
+    assert order['lastName'] == 'Wayne'
+    assert order['phone'] == '1234567890'
+    assert order['email'] == 'batman@gmail.com'
+    assert order['stockingCount'] == 2
+    assert order['pickup'] == 'house'
+    assert order['message'] == "hello world"
+
+def test_order_ts():
+    order = {}
+    ts_start = datetime.now()
+    add_order_timestamp(order)
+    ts_end = datetime.now()
+    print(ts_start)
+    print(order.get('order_ts'))
+    print(ts_end)
+    assert order.get('order_ts', None) is not None
+    assert ts_start < datetime.strptime(order.get('order_ts', 0), '%Y-%m-%d %H:%M:%S.%f') < ts_end

@@ -93,6 +93,7 @@ Tests are defined in the `tests` folder in this project. Use PIP to install the 
 
 ```bash
 lor-form-tbl$ pip install -r tests/requirements.txt --user
+# add -s flag to the commands below to allow print statements
 # unit test
 lor-form-tbl$ python -m pytest tests/unit -v
 # integration test, requiring deploying the stack first.

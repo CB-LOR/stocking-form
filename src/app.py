@@ -1,5 +1,6 @@
-import json
 import boto3
+from datetime import datetime
+import json
 import traceback
 
 ddb = boto3.resource('dynamodb')
@@ -15,6 +16,8 @@ def lambda_handler(event, context):
             "body": json.dumps({"message": "Bad attribute"}),
         }
 
+    add_order_timestamp(order)
+    
     # Add entry to table
     table.put_item(
         Item = order
@@ -47,3 +50,6 @@ def parse_order(event):
         print('Failed to get all required attributes', e)
         print(traceback.format_exc())
         return None
+
+def add_order_timestamp(order):
+    order['order_ts'] = datetime.now()

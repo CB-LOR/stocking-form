@@ -1,8 +1,8 @@
+from datetime import datetime
 import json
-
 import pytest
 
-from src.app import parse_order
+from src.app import parse_order, add_order_timestamp
 
 
 @pytest.fixture()
@@ -73,3 +73,11 @@ def test_parse_order(apigw_event):
     assert order['stockingCount'] == 2
     assert order['pickup'] == 'house'
     assert order['message'] == "hello world"
+
+def test_order_ts():
+    order = {}
+    ts_start = datetime.now()
+    add_order_timestamp(order)
+    ts_end = datetime.now()
+    assert order.get('order_ts', None) is not None
+    assert ts_start < order.get('order_ts', 0) < ts_end

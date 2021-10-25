@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         }
 
     add_order_timestamp(order)
-    
+
     # Add entry to table
     table.put_item(
         Item = order
@@ -52,4 +52,4 @@ def parse_order(event):
         return None
 
 def add_order_timestamp(order):
-    order['order_ts'] = datetime.now()
+    order['order_ts'] = str(datetime.now())

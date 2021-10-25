@@ -79,5 +79,8 @@ def test_order_ts():
     ts_start = datetime.now()
     add_order_timestamp(order)
     ts_end = datetime.now()
+    print(ts_start)
+    print(order.get('order_ts'))
+    print(ts_end)
     assert order.get('order_ts', None) is not None
-    assert ts_start < order.get('order_ts', 0) < ts_end
+    assert ts_start < datetime.strptime(order.get('order_ts', 0), '%Y-%m-%d %H:%M:%S.%f') < ts_end

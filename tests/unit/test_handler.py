@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import pytest
 
-from src.app import parse_order, add_order_timestamp
+from src.app import parse_order, add_order_timestamp, lambda_handler
 
 
 @pytest.fixture()
@@ -84,3 +84,10 @@ def test_order_ts():
     print(ts_end)
     assert order.get('order_ts', None) is not None
     assert ts_start < datetime.strptime(order.get('order_ts', 0), '%Y-%m-%d %H:%M:%S.%f') < ts_end
+
+def test_signup(apigw_event):
+    response = lambda_handler(apigw_event, None)
+    assert 'body' in response
+    body = json.loads(response['body'])
+    assert 'message' in body
+    assert 'success' == body['message']

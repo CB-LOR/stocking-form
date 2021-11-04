@@ -4,10 +4,12 @@ import json
 import traceback
 
 ddb = boto3.resource('dynamodb')
+sns = boto3.client('sns')
 table = ddb.Table('stocking-orders')
 
 
 def lambda_handler(event, context):
+    print(event)
     # parse order from event
     order = parse_order(event)
     if order is None:
@@ -22,6 +24,10 @@ def lambda_handler(event, context):
     table.put_item(
         Item = order
     )
+
+    resp = pub_to_topic(order)
+
+    print(json.dumps(resp))
 
     return {
         "statusCode": 200,
@@ -53,3 +59,21 @@ def parse_order(event):
 
 def add_order_timestamp(order):
     order['order_ts'] = str(datetime.now())
+
+def pub_to_topic(order):
+    # construct message attributes
+    msgatt = dict()
+    for att in order:
+        msgatt[att] = {
+            'DataType': 'String',
+            'StringValue': str(order[att])
+        }
+
+    response = sns.publish(
+        TargetArn='arn:aws:sns:us-east-1:943275084484:StockingOrderNotification',
+        Message=f'New stokcing order from {order["email"]}',
+        Subject='Stocking order submitted',
+        MessageAttributes=msgatt
+    )
+
+    return response

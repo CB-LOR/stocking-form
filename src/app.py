@@ -25,9 +25,7 @@ def lambda_handler(event, context):
         Item = order
     )
 
-    resp = pub_to_topic(order)
-
-    print(json.dumps(resp))
+    pub_to_topic(order)
 
     return {
         "statusCode": 200,
@@ -63,17 +61,28 @@ def add_order_timestamp(order):
 def pub_to_topic(order):
     # construct message attributes
     msgatt = dict()
-    for att in order:
-        msgatt[att] = {
-            'DataType': 'String',
-            'StringValue': str(order[att])
-        }
+    try:
+        for att in order:
+            attval = order.get(att, None)
+            # check if attribute is empty
+            if attval is not None and attval != '':
+                msgatt[att] = {
+                    'DataType': 'String',
+                    'StringValue': str(order[att])
+                }
+        message_str = f'New stocking order from {order.get("email", "[empty]")}'
 
-    response = sns.publish(
-        TargetArn='arn:aws:sns:us-east-1:943275084484:StockingOrderNotification',
-        Message=f'New stokcing order from {order["email"]}',
-        Subject='Stocking order submitted',
-        MessageAttributes=msgatt
-    )
+        response = sns.publish(
+            TargetArn='arn:aws:sns:us-east-1:943275084484:StockingOrderNotification',
+            Message=message_str,
+            Subject='Stocking order submitted',
+            MessageAttributes=msgatt
+        )
+        print(response)
+        return True
+    
+    except Exception as e:
+        print('Failed to send notification')
+        print(traceback.format_exc())
+        return False
 
-    return response

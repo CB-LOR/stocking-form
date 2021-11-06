@@ -42,6 +42,3 @@ Outputs:
   SignupFunction:
     Description: "Signup Lambda Function ARN"
     Value: !GetAtt SignupFunction.Arn
-  SignupFunctionIamRole:
-    Description: "Implicit IAM Role created for Signup function"
-    Value: !GetAtt SignupFunctionRole.Arn

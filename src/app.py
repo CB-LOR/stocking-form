@@ -17,6 +17,12 @@ def lambda_handler(event, context):
             "statusCode": 400,
             "body": json.dumps({"message": "Bad attribute"}),
         }
+    
+    if not is_unique(order):
+        return{
+            "statusCode": 409,
+            "body": json.dumps({"message": "Order already exists"}),
+        }
 
     add_order_timestamp(order)
 
@@ -45,7 +51,7 @@ def parse_order(event):
             'firstName': body['firstName'],
             'lastName': body['lastName'],
             'phone': body['phone'],
-            'email': body['email'],
+            'email': body['email'].lower(),
             'stockingCount': body['stockingCount'],
             'pickup': body['pickup'],
             'message': body.get('message', '')
@@ -54,6 +60,17 @@ def parse_order(event):
         print('Failed to get all required attributes', e)
         print(traceback.format_exc())
         return None
+
+
+def is_unique(order):
+    resp = table.get_item(
+        Key={
+            'email': order['email']
+        },
+        ProjectionExpression='email'
+    )
+    return resp.get('Item', None) is None
+
 
 def add_order_timestamp(order):
     order['order_ts'] = str(datetime.now())

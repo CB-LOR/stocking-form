@@ -2,7 +2,8 @@ from datetime import datetime
 import json
 import pytest
 
-from src.app import parse_order, add_order_timestamp, lambda_handler, pub_to_topic
+from src.app import (parse_order, add_order_timestamp, lambda_handler,
+                    pub_to_topic, is_unique)
 
 
 @pytest.fixture()
@@ -10,7 +11,7 @@ def apigw_event():
     """ Generates API GW Event"""
 
     return {
-        "body": '{"firstName": "Bruce", "lastName": "Wayne", "phone": "1234567890", "email": "batman@gmail.com", "stockingCount": 2, "pickup": "house", "message": "hello world"}',
+        "body": '{"firstName": "Bruce", "lastName": "Wayne", "phone": "1234567890", "email": "Batman@gmail.com", "stockingCount": 2, "pickup": "house", "message": "hello world"}',
         "resource": "/{proxy+}",
         "requestContext": {
             "resourceId": "123456",
@@ -142,19 +143,33 @@ def test_order_ts():
     assert order.get('order_ts', None) is not None
     assert ts_start < datetime.strptime(order.get('order_ts', 0), '%Y-%m-%d %H:%M:%S.%f') < ts_end
 
-def test_signup(apigw_event):
-    response = lambda_handler(apigw_event, None)
-    assert 'body' in response
-    body = json.loads(response['body'])
-    assert 'message' in body
-    assert 'success' == body['message']
+# def test_signup(apigw_event):
+#     response = lambda_handler(apigw_event, None)
+#     assert 'body' in response
+#     body = json.loads(response['body'])
+#     assert 'message' in body
+#     assert 'success' == body['message']
 
-def test_sendPub_success(apigw_event):
-    order = parse_order(apigw_event)
-    resp = pub_to_topic(order)
-    assert resp is True
+# def test_sendPub_success(apigw_event):
+#     order = parse_order(apigw_event)
+#     resp = pub_to_topic(order)
+#     assert resp is True
 
-def test_sendPub_emptyMsg_success(apigw_emptyMsg_event):
-    order = parse_order(apigw_emptyMsg_event)
-    resp = pub_to_topic(order)
+# def test_sendPub_emptyMsg_success(apigw_emptyMsg_event):
+#     order = parse_order(apigw_emptyMsg_event)
+#     resp = pub_to_topic(order)
+#     assert resp is True
+
+def test_isUnique_false():
+    order = {
+        'email': '4cloverz@gmail.com'
+    }
+    resp = is_unique(order)
+    assert resp is False
+
+def test_isUnique_true():
+    order = {
+        'email': 'new@email.com'
+    }
+    resp = is_unique(order)
     assert resp is True

@@ -22,10 +22,12 @@ Resources:
             Path: /stocking/signup
             Method: post
   DynamoDBTable:
-        Type: 'AWS::Serverless::SimpleTable'
+        Type: 'AWS::DynamoDB::Table'
         Properties:
-            PrimaryKey:
-                Name: email
+            KeySchema:
+              - AttributeName: email
+                Type: String
+              - AttributeName: order_ts
                 Type: String
             ProvisionedThroughput:
                 WriteCapacityUnits: 3
